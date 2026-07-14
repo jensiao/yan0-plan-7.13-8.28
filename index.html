@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>研0计划 · 7.13–8.28</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1B1A;
+    --surface:#16241F;
+    --surface-2:#1D2E28;
+    --line: rgba(234,243,239,0.09);
+    --mint:#7FE7C4;
+    --coral:#E8927C;
+    --text:#EAF3EF;
+    --muted:#8FA69D;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(120% 140% at 20% -10%, #17332C 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:'Noto Sans SC', sans-serif;
+    min-height:100vh;
+    padding: 28px 18px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+
+  /* ---- Header / breath signature ---- */
+  header{margin-bottom: 30px;}
+  .eyebrow{
+    font-size:12px; letter-spacing:.18em; color:var(--muted);
+    text-transform:uppercase; margin-bottom:6px;
+  }
+  h1{
+    font-family:'Noto Serif SC', serif;
+    font-weight:700; font-size:30px; margin:0 0 4px;
+    letter-spacing:.02em;
+  }
+  .sub{color:var(--muted); font-size:13.5px; margin-bottom:20px;}
+
+  .breath-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:20px 20px 16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .breath-card::before{
+    content:"";
+    position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(127,231,196,0.06), transparent);
+    animation: sweep 6s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep{
+    0%,100%{ transform: translateX(-30%);}
+    50%{ transform: translateX(30%);}
+  }
+  .breath-row{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;}
+  .breath-label{font-size:13px; color:var(--muted);}
+  .breath-pct{font-family:'Noto Serif SC',serif; font-size:26px; font-weight:700; color:var(--mint);}
+  svg#wave{width:100%; height:46px; display:block;}
+  .wave-path{
+    fill:none; stroke:var(--mint); stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round;
+    filter: drop-shadow(0 0 6px rgba(127,231,196,0.35));
+  }
+  .today-marker{
+    position:absolute; top:0; bottom:0; width:1px;
+    background: var(--coral);
+  }
+
+  /* ---- Timeline ---- */
+  .phase{
+    margin-top:18px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:var(--surface);
+    overflow:hidden;
+  }
+  .phase.rest{border-color: rgba(232,146,124,0.35);}
+  .phase-head{
+    display:flex; align-items:center; gap:12px;
+    padding:16px 18px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .phase-dates{
+    font-family:'Noto Serif SC',serif;
+    font-size:12px; color:var(--muted);
+    min-width:74px;
+    letter-spacing:.02em;
+  }
+  .phase.rest .phase-dates{color:var(--coral);}
+  .phase-title{
+    flex:1;
+    font-size:15.5px; font-weight:500;
+  }
+  .phase-progress{
+    font-size:12px; color:var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .chev{
+    width:16px; height:16px; color:var(--muted);
+    transition: transform .25s ease;
+    flex-shrink:0;
+  }
+  .phase.open .chev{ transform: rotate(90deg); }
+
+  .phase-tasks{
+    max-height:0;
+    overflow:hidden;
+    transition: max-height .3s ease;
+    border-top: 1px solid transparent;
+  }
+  .phase.open .phase-tasks{
+    border-top: 1px solid var(--line);
+  }
+
+  .task{
+    display:flex; align-items:flex-start; gap:12px;
+    padding:13px 18px 13px 20px;
+    border-bottom:1px solid var(--line);
+    font-size:14.5px;
+  }
+  .task:last-child{border-bottom:none;}
+  .task.done .task-text{ color:var(--muted); text-decoration: line-through; text-decoration-color: rgba(143,166,157,0.5);}
+
+  .check{
+    width:19px; height:19px; border-radius:6px;
+    border:1.5px solid var(--muted);
+    flex-shrink:0;
+    margin-top:1px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .task.done .check{
+    background:var(--mint); border-color:var(--mint);
+  }
+  .check svg{width:12px; height:12px; opacity:0; transition:opacity .15s ease;}
+  .task.done .check svg{opacity:1;}
+  .task-body{flex:1; cursor:pointer;}
+  .task-text{line-height:1.4;}
+  .task-note{
+    margin-top:5px;
+    font-size:12.5px;
+    line-height:1.55;
+    color:var(--muted);
+  }
+  .task.done .task-note{ opacity:.55; }
+
+  .rest-note{
+    padding:12px 18px 16px 20px;
+    font-size:12.5px; color:var(--coral);
+    display:flex; gap:8px; align-items:flex-start;
+    border-top:1px solid var(--line);
+  }
+
+  footer{
+    text-align:center; margin-top:28px;
+    font-size:11.5px; color:var(--muted);
+  }
+  .reset{
+    background:none; border:1px solid var(--line); color:var(--muted);
+    font-size:11.5px; padding:6px 14px; border-radius:999px;
+    margin-top:12px; cursor:pointer;
+  }
+  .reset:active{opacity:.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">研 0 计划 · 7.13 — 8.28</div>
+    <h1>先文后武</h1>
+    <div class="sub">术前收尾 → 静养恢复 → 逐步复工 → 冲刺雅思与深度学习</div>
+
+    <div class="breath-card">
+      <div class="breath-row">
+        <span class="breath-label">整体进度</span>
+        <span class="breath-pct" id="pctText">0%</span>
+      </div>
+      <svg id="wave" viewBox="0 0 300 46" preserveAspectRatio="none">
+        <path class="wave-path" id="wavePath" d=""/>
+      </svg>
+    </div>
+  </header>
+
+  <div id="phases"></div>
+
+  <footer>
+    今天是 7.13 · 手术窗口 7.16–7.22，好好休息，别逞强
+    <br/>
+    <button class="reset" id="resetBtn">重置打卡</button>
+  </footer>
+</div>
+
+<script>
+const PHASES = [
+  { id:'p1', dates:'7.13–7.15', title:'术前收尾', rest:false,
+    tasks:[
+      { t:'了解论文毕业要求', n:'查南京目标院系官网「研究生学位论文要求」，顺手记下历年开题/答辩时间表' },
+      { t:'了解未来就业情况', n:'知乎/领英搜「专业＋就业方向」，重点看薪资中位数和常见去向，控制在1-2小时内，别陷入信息过载' },
+    ]},
+  { id:'p2', dates:'7.16–7.22', title:'手术 · 静养期', rest:true,
+    tasks:[
+      { t:'书籍熏陶心境', n:'推荐《活着》余华、《次第花开》希阿荣博堪布——字不密、情绪浓度高但不费脑，适合术后精力有限时读' },
+      { t:'不看短视频', n:'' },
+    ],
+    note:'深度学习 / 雅思本周暂停，用眼久坐都先缓一缓' },
+  { id:'p3', dates:'7.23–7.29', title:'逐步复工', rest:false,
+    tasks:[
+      { t:'深度学习：跟着李沐《动手学深度学习》推进', n:'环境已配好，按自己节奏往后走几章，强度先放低' },
+      { t:'推进博睿家教入职流程', n:'把之前分析好的合同条款、退费规则走完手续' },
+    ]},
+  { id:'p4', dates:'7.30–8.5', title:'雅思：摸底＋词汇', rest:false,
+    tasks:[
+      { t:'做一套完整模考，摸清四项弱点', n:'先定位听/说/读/写里最弱的1-2项，后面几周针对性练' },
+      { t:'每天30个高频词＋精听1篇', n:'精听用跟读＋听写的方式，别只是被动听' },
+    ]},
+  { id:'p5', dates:'8.6–8.12', title:'雅思单项突破①＋投资入门', rest:false,
+    tasks:[
+      { t:'集中练最弱的1-2项', n:'口语：题库过一遍Part1&2；或写作：吃透大作文框架和常用句型' },
+      { t:'了解投资知识', n:'先搞懂股票/基金/债券区别、复利、资产配置这几个基础概念；找1-2本入门书或B站系列课过一遍框架，不用深究，先建地图' },
+      { t:'深度学习保持节奏', n:'李沐书继续往后推进' },
+    ]},
+  { id:'p6', dates:'8.13–8.19', title:'雅思单项突破②＋项目收尾', rest:false,
+    tasks:[
+      { t:'换另一个薄弱项集中突破', n:'配合阅读每天1篇限时精做，做完总结错题类型（词汇/逻辑/定位）' },
+      { t:'深度学习：完成一个完整小项目', n:'挑书里一个案例，自己独立跑通并简单记录笔记' },
+    ]},
+  { id:'p7', dates:'8.20–8.26', title:'雅思模考冲刺', rest:false,
+    tasks:[
+      { t:'隔天一套完整模考，严格掐时间', n:'模考后错题回归对应单项练习，不要只对答案不复盘' },
+      { t:'深度学习/投资知识收尾', n:'查漏补缺，把前面零散的笔记整理一下' },
+    ]},
+  { id:'p8', dates:'8.27–8.28', title:'复盘收心', rest:false,
+    tasks:[
+      { t:'整体复盘并简单记录', n:'雅思成绩预估、深度学习进度、投资知识框架各写几句' },
+      { t:'收心准备开学', n:'' },
+    ]},
+];
+
+const STORAGE_KEY = 'yan0-plan-checks';
+let state = {};
+
+function taskKey(pid, idx){ return pid + '-' + idx; }
+
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY);
+    state = res && res.value ? JSON.parse(res.value) : {};
+  }catch(e){
+    state = {};
+  }
+}
+
+async function saveState(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    console.error('save failed', e);
+  }
+}
+
+function totalCount(){
+  return PHASES.reduce((sum,p)=>sum+p.tasks.length, 0);
+}
+function doneCount(){
+  let n=0;
+  PHASES.forEach(p=>p.tasks.forEach((_,i)=>{ if(state[taskKey(p.id,i)]) n++; }));
+  return n;
+}
+
+function renderWave(pct){
+  // gentle sine wave whose amplitude reflects progress, drawn across width 300
+  const w=300,h=46, mid=h/2;
+  const amp = 4 + (pct/100)*12;
+  let d = `M0 ${mid}`;
+  const steps=60;
+  for(let i=1;i<=steps;i++){
+    const x = (w/steps)*i;
+    const y = mid + Math.sin(i/steps*Math.PI*4)*amp*Math.sin(i/steps*Math.PI);
+    d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  document.getElementById('wavePath').setAttribute('d', d);
+}
+
+function updateProgressUI(){
+  const total = totalCount();
+  const done = doneCount();
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('pctText').textContent = pct + '%';
+  renderWave(pct);
+
+  PHASES.forEach(p=>{
+    const doneP = p.tasks.filter((_,i)=>state[taskKey(p.id,i)]).length;
+    const el = document.querySelector(`.phase-progress[data-pid="${p.id}"]`);
+    if(el) el.textContent = `${doneP}/${p.tasks.length}`;
+  });
+}
+
+function buildPhaseHTML(p){
+  const doneP = p.tasks.filter((_,i)=>state[taskKey(p.id,i)]).length;
+  const tasksHTML = p.tasks.map((task,i)=>{
+    const key = taskKey(p.id,i);
+    const isDone = !!state[key];
+    const noteHTML = task.n ? `<div class="task-note">${task.n}</div>` : '';
+    return `
+    <div class="task ${isDone?'done':''}" data-key="${key}">
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0F1B1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="task-body">
+        <div class="task-text">${task.t}</div>
+        ${noteHTML}
+      </div>
+    </div>`;
+  }).join('');
+
+  const noteHTML = p.note ? `<div class="rest-note">☁ ${p.note}</div>` : '';
+
+  return `
+  <div class="phase ${p.rest?'rest':''}" data-pid="${p.id}">
+    <div class="phase-head">
+      <div class="phase-dates">${p.dates}</div>
+      <div class="phase-title">${p.title}</div>
+      <div class="phase-progress" data-pid="${p.id}">${doneP}/${p.tasks.length}</div>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+    <div class="phase-tasks">
+      ${tasksHTML}
+      ${noteHTML}
+    </div>
+  </div>`;
+}
+
+function render(){
+  const container = document.getElementById('phases');
+  container.innerHTML = PHASES.map(buildPhaseHTML).join('');
+
+  // phase toggle
+  container.querySelectorAll('.phase-head').forEach(head=>{
+    head.addEventListener('click', ()=>{
+      const phase = head.parentElement;
+      const tasksDiv = phase.querySelector('.phase-tasks');
+      const isOpen = phase.classList.contains('open');
+      if(isOpen){
+        phase.classList.remove('open');
+        tasksDiv.style.maxHeight = null;
+      }else{
+        phase.classList.add('open');
+        tasksDiv.style.maxHeight = tasksDiv.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // task toggle
+  container.querySelectorAll('.task').forEach(taskEl=>{
+    taskEl.addEventListener('click', async (e)=>{
+      const key = taskEl.getAttribute('data-key');
+      state[key] = !state[key];
+      taskEl.classList.toggle('done', !!state[key]);
+      updateProgressUI();
+      await saveState();
+    });
+  });
+
+  updateProgressUI();
+
+  // auto-open the current phase (7.13-7.15 initially)
+  const firstOpen = container.querySelector('.phase');
+  if(firstOpen){
+    firstOpen.classList.add('open');
+    const td = firstOpen.querySelector('.phase-tasks');
+    td.style.maxHeight = td.scrollHeight + 'px';
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('确定要清空所有打卡记录吗？')) return;
+  state = {};
+  await saveState();
+  render();
+});
+
+(async function init(){
+  await loadState();
+  render();
+})();
+</script>
+</body>
+</html>
