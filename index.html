@@ -96,6 +96,7 @@
     letter-spacing:.02em;
   }
   .phase.rest .phase-dates{color:var(--coral);}
+  .phase-dates:empty{ display:none; }
   .phase-title{
     flex:1;
     font-size:15.5px; font-weight:500;
@@ -244,15 +245,114 @@
     margin-top:12px; cursor:pointer;
   }
   .reset:active{opacity:.6;}
+
+  /* ---- Tabs ---- */
+  .tabs{
+    display:flex; gap:6px; margin: 14px 0 18px;
+    background: var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:4px;
+  }
+  .tab-btn{
+    flex:1; background:none; border:none; color:var(--muted);
+    font-family:'Noto Sans SC', sans-serif;
+    font-size:13.5px; padding:9px 6px; border-radius:9px;
+    cursor:pointer; transition: all .18s ease;
+  }
+  .tab-btn.active{ background: rgba(127,231,196,0.12); color:var(--mint); font-weight:500; }
+
+  .mini-progress{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:12px 16px; margin-bottom:18px;
+    font-size:13px; color:var(--muted);
+  }
+  .mini-progress b{ color:var(--mint); font-family:'Noto Serif SC',serif; font-size:16px; }
+
+  /* ---- Reference cards (career tab) ---- */
+  .card{
+    margin-top:16px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:var(--surface);
+    padding:18px 18px 6px;
+  }
+  .card-title{
+    font-family:'Noto Serif SC', serif;
+    font-size:16px; font-weight:600;
+    margin-bottom:4px;
+    display:flex; align-items:center; gap:7px;
+  }
+  .card-title .dot{ width:6px; height:6px; border-radius:50%; background:var(--mint); flex-shrink:0; }
+  .card-sub{ font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.5; }
+
+  .chip-group{ margin-bottom:16px; }
+  .chip-group:last-child{ margin-bottom:14px; }
+  .chip-label{ font-size:12.5px; color:var(--text); margin-bottom:8px; line-height:1.5; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chip{
+    font-size:12.5px; padding:5px 12px; border-radius:999px;
+    background: rgba(127,231,196,0.08); border:1px solid rgba(127,231,196,0.25);
+    color:var(--mint);
+  }
+
+  .timeline{ padding-bottom:16px; }
+  .tl-item{ display:flex; gap:12px; position:relative; padding-bottom:20px; }
+  .tl-item:last-child{ padding-bottom:0; }
+  .tl-dot-col{ display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:10px; }
+  .tl-dot{ width:9px; height:9px; border-radius:50%; background:var(--mint); margin-top:4px; flex-shrink:0; }
+  .tl-item.final .tl-dot{ background:var(--coral); }
+  .tl-line{ width:1px; flex:1; background:var(--line); margin-top:4px; }
+  .tl-content{ flex:1; padding-bottom:2px; }
+  .tl-label{ font-size:14px; font-weight:500; margin-bottom:3px; }
+  .tl-desc{ font-size:12.5px; color:var(--muted); line-height:1.55; }
+
+  .callout{
+    border-radius:12px; padding:12px 14px; margin-bottom:12px;
+    font-size:12.5px; line-height:1.6;
+    border:1px solid var(--line);
+  }
+  .callout-label{ font-size:11.5px; color:var(--mint); font-weight:500; margin-bottom:5px; letter-spacing:.03em; }
+  .callout.warm{ border-color: rgba(232,146,124,0.3); }
+  .callout.warm .callout-label{ color:var(--coral); }
+  .callout p{ margin:0; color:var(--text); }
+
+  .compare-wrap{ display:flex; flex-direction:column; gap:12px; margin-bottom:16px; }
+  .compare-col{
+    border-radius:12px; padding:14px 15px;
+    border:1px solid var(--line); background: rgba(234,243,239,0.02);
+  }
+  .compare-col.primary{ border-color: rgba(127,231,196,0.35); background: rgba(127,231,196,0.05); }
+  .compare-title{ font-size:13.5px; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .compare-col.primary .compare-title{ color:var(--mint); }
+  .compare-col:not(.primary) .compare-title{ color:var(--muted); }
+  .compare-list{ margin:0; padding-left:18px; font-size:12.5px; color:var(--muted); line-height:1.7; }
+  .compare-list li{ margin-bottom:2px; }
+
+  .quote-block{
+    margin: 20px 0 6px;
+    padding:16px 18px;
+    border-left:2px solid var(--mint);
+    font-family:'Noto Serif SC', serif;
+    font-size:14px; line-height:1.7;
+    color:var(--text);
+    font-style: italic;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">研 0 计划 · 7.13 — 8.28</div>
-    <h1>先文后武</h1>
-    <div class="sub">术前收尾 → 静养恢复 → 逐步复工 → 冲刺雅思与深度学习</div>
+    <div class="eyebrow" id="eyebrowText">研 0 计划 · 7.13 — 8.28</div>
+    <h1 id="mainTitle">先文后武</h1>
+    <div class="sub" id="mainSub">术前收尾 → 静养恢复 → 逐步复工 → 冲刺雅思与深度学习</div>
 
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="plan">研0清单</button>
+      <button class="tab-btn" data-tab="career">职业规划</button>
+    </div>
+  </header>
+
+  <section id="view-plan">
     <div class="breath-card">
       <div class="breath-row">
         <span class="breath-label">整体进度</span>
@@ -262,15 +362,119 @@
         <path class="wave-path" id="wavePath" d=""/>
       </svg>
     </div>
-  </header>
 
-  <div id="phases"></div>
+    <div id="phases"></div>
 
-  <footer>
-    今天是 7.13 · 手术窗口 7.16–7.22，好好休息，别逞强
-    <br/>
-    <button class="reset" id="resetBtn">重置打卡</button>
-  </footer>
+    <footer>
+      今天是 7.13 · 手术窗口 7.16–7.22，好好休息，别逞强
+      <br/>
+      <button class="reset" id="resetBtn">重置打卡</button>
+    </footer>
+  </section>
+
+  <section id="view-career" style="display:none;">
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>目标方向</div>
+      <div class="card-sub">PHM（故障预测与健康管理）方向，冲算法岗优先</div>
+      <div class="chip-group">
+        <div class="chip-label">制造 / 能源 / 交通类大厂 · 设备健康管理与预测性维护 team</div>
+        <div class="chips">
+          <span class="chip">西门子</span><span class="chip">ABB</span><span class="chip">华为</span><span class="chip">比亚迪</span>
+        </div>
+      </div>
+      <div class="chip-group">
+        <div class="chip-label">互联网大厂 · 云计算 / 工业互联网部门算法实习生</div>
+        <div class="chips">
+          <span class="chip">腾讯</span><span class="chip">阿里</span><span class="chip">字节</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>技术栈自查</div>
+      <div class="card-sub">点开可以记录具体进展、看的资料或项目链接</div>
+      <div class="mini-progress"><span>已自查完成</span><b id="skillPct">0/0</b></div>
+      <div id="career-skills"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>时间线策略</div>
+      <div class="card-sub">厚积薄发，不急于求成——论文只求达到毕业要求就好</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-label">研一上学期</div>
+            <div class="tl-desc">课程为主，同时多读papers找感觉；基础积累不够就猛攻论文，效率反而低</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-label">研一下学期</div>
+            <div class="tl-desc">逐步推进实验或项目工作，为论文材料打底</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-label">研一暑假</div>
+            <div class="tl-desc">手里应有阶段性成果可整理；重点冲算法实习——LeetCode保持手感＋精读PHM顶会论文打底</div>
+          </div>
+        </div>
+        <div class="tl-item final">
+          <div class="tl-dot-col"><div class="tl-dot"></div></div>
+          <div class="tl-content">
+            <div class="tl-label">论文目标</div>
+            <div class="tl-desc">达到毕业要求即可；若能顺手发出高质量论文，可大幅弥补背景劣势</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>背景怎么看</div>
+      <div class="card-sub">专升本 → 南理工硕，客观上不算亮眼背景</div>
+      <div class="callout">
+        <div class="callout-label">怎么补</div>
+        <p>算法岗最终看技术实力和项目经验——硬核research、论文质量、竞赛名次，都能在很大程度上弥补学历背景的劣势</p>
+      </div>
+      <div class="callout">
+        <div class="callout-label">军工资源是优势，不是短板</div>
+        <p>导师的军工所资源反而是加分项：航空航天、装备维护这些场景对PHM需求大，数据和背景通常比较扎实，不是凑数据的水paper</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>如果研一暑假算法面不上</div>
+      <div class="card-sub">那时大概率还没有论文产出，提前准备一条备选路径</div>
+      <div class="compare-wrap">
+        <div class="compare-col primary">
+          <div class="compare-title">✓ 优先备选：开发 / 工程类实习</div>
+          <ul class="compare-list">
+            <li>后端开发、嵌入式开发、通信协议开发</li>
+            <li>对paper要求低，更看重coding能力和工程实践</li>
+            <li>研一把coding基础打扎实，攒几个像样的GitHub项目，备好LeetCode和系统设计</li>
+            <li>有第一段实习经历后，转算法或继续走开发都会容易得多——证明了自己在industry环境下能干活</li>
+          </ul>
+        </div>
+        <div class="compare-col">
+          <div class="compare-title">✕ 非优先：商分 / 产品</div>
+          <ul class="compare-list">
+            <li>门槛相对低，但上升空间有限，可替代性强</li>
+            <li>很多岗位实际是取数、写报告的执行性工作，难真正参与战略决策</li>
+            <li>前几年工资可能还行，往后容易遇瓶颈</li>
+          </ul>
+        </div>
+      </div>
+      <div class="quote-block">
+        师兄师姐里走算法岗的前辈几乎没有，大多去了商分和产品——这次，走一条他们没走过的路。
+      </div>
+    </div>
+
+  </section>
+
 </div>
 
 <script>
@@ -316,6 +520,19 @@ const PHASES = [
     tasks:[
       { t:'整体复盘并简单记录', n:'雅思成绩预估、深度学习进度、投资知识框架各写几句' },
       { t:'收心准备开学', n:'' },
+    ]},
+];
+
+const CAREER_SKILLS = [
+  { id:'skill', dates:'', title:'技术栈自查', rest:false,
+    tasks:[
+      { t:'Python基础扎实', n:'语法、常用库、工程习惯都要过关，这是硬门槛' },
+      { t:'PyTorch 或 TensorFlow 至少熟练一个', n:'建议优先PyTorch，PHM相关论文代码大多用它' },
+      { t:'SQL', n:'能写查询、理解基本的数据处理逻辑' },
+      { t:'数据可视化工具', n:'Matplotlib/Seaborn，或Tableau、PowerBI任选一个顺手的' },
+      { t:'英语：读paper＋写技术文档', n:'不用追求流利口语，能看懂论文、写清楚技术文档就够用' },
+      { t:'LeetCode 保持手感', n:'春招一般2-3月开始，研一暑假前保持周更节奏就行，不用刷太猛' },
+      { t:'精读 PHM 领域近期顶会论文', n:'面试时能聊出具体细节，比背八股更有说服力' },
     ]},
 ];
 
@@ -396,12 +613,12 @@ function updateJournalBtn(key){
   btn.querySelector('span').textContent = count > 0 ? count : '记录';
 }
 
-function totalCount(){
-  return PHASES.reduce((sum,p)=>sum+p.tasks.length, 0);
+function totalCount(groups){
+  return groups.reduce((sum,p)=>sum+p.tasks.length, 0);
 }
-function doneCount(){
+function doneCount(groups){
   let n=0;
-  PHASES.forEach(p=>p.tasks.forEach((_,i)=>{ if(state[taskKey(p.id,i)]) n++; }));
+  groups.forEach(p=>p.tasks.forEach((_,i)=>{ if(state[taskKey(p.id,i)]) n++; }));
   return n;
 }
 
@@ -420,13 +637,22 @@ function renderWave(pct){
 }
 
 function updateProgressUI(){
-  const total = totalCount();
-  const done = doneCount();
+  const total = totalCount(PHASES);
+  const done = doneCount(PHASES);
   const pct = total ? Math.round(done/total*100) : 0;
   document.getElementById('pctText').textContent = pct + '%';
   renderWave(pct);
+  updateGroupBadges(PHASES);
 
-  PHASES.forEach(p=>{
+  const sTotal = totalCount(CAREER_SKILLS);
+  const sDone = doneCount(CAREER_SKILLS);
+  const skillPctEl = document.getElementById('skillPct');
+  if(skillPctEl) skillPctEl.textContent = `${sDone}/${sTotal}`;
+  updateGroupBadges(CAREER_SKILLS);
+}
+
+function updateGroupBadges(groups){
+  groups.forEach(p=>{
     const doneP = p.tasks.filter((_,i)=>state[taskKey(p.id,i)]).length;
     const el = document.querySelector(`.phase-progress[data-pid="${p.id}"]`);
     if(el) el.textContent = `${doneP}/${p.tasks.length}`;
@@ -492,10 +718,7 @@ function buildPhaseHTML(p){
   </div>`;
 }
 
-function render(){
-  const container = document.getElementById('phases');
-  container.innerHTML = PHASES.map(buildPhaseHTML).join('');
-
+function wireContainer(container){
   // phase toggle
   container.querySelectorAll('.phase-head').forEach(head=>{
     head.addEventListener('click', ()=>{
@@ -522,7 +745,6 @@ function render(){
       taskEl.classList.toggle('done', !!state[key]);
       updateProgressUI();
       await saveState();
-      // re-sync open phase heights since checkbox doesn't change height, but keep safe
     });
   });
 
@@ -542,7 +764,6 @@ function render(){
         renderJournalList(key);
         panel.style.maxHeight = panel.scrollHeight + 'px';
       }
-      // resync the parent phase-tasks height so it doesn't clip
       const phase = taskEl.closest('.phase');
       const tasksDiv = phase.querySelector('.phase-tasks');
       requestAnimationFrame(()=>{
@@ -580,7 +801,7 @@ function render(){
     });
   });
 
-  // journal delete (event delegation since entries re-render)
+  // journal delete
   container.querySelectorAll('.journal-list').forEach(listEl=>{
     listEl.addEventListener('click', async (e)=>{
       const delBtn = e.target.closest('[data-action="del-entry"]');
@@ -601,25 +822,55 @@ function render(){
       });
     });
   });
+}
 
-  updateProgressUI();
-
-  // auto-open the current phase (7.13-7.15 initially)
-  const firstOpen = container.querySelector('.phase');
-  if(firstOpen){
-    firstOpen.classList.add('open');
-    const td = firstOpen.querySelector('.phase-tasks');
-    td.style.maxHeight = td.scrollHeight + 'px';
+function renderGroupInto(containerId, groups, openFirst){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML = groups.map(buildPhaseHTML).join('');
+  wireContainer(container);
+  if(openFirst){
+    const firstOpen = container.querySelector('.phase');
+    if(firstOpen){
+      firstOpen.classList.add('open');
+      const td = firstOpen.querySelector('.phase-tasks');
+      td.style.maxHeight = td.scrollHeight + 'px';
+    }
   }
 }
 
+function render(){
+  renderGroupInto('phases', PHASES, true);
+  renderGroupInto('career-skills', CAREER_SKILLS, false);
+  updateProgressUI();
+}
+
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
-  if(!confirm('确定要清空所有打卡记录和想法笔记吗？此操作不可恢复')) return;
+  if(!confirm('确定要清空所有打卡记录和想法笔记吗？（研0清单和职业规划自查都会清空）此操作不可恢复')) return;
   state = {};
   journal = {};
   await saveState();
   await saveJournal();
   render();
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.getAttribute('data-tab');
+    document.getElementById('view-plan').style.display = tab==='plan' ? '' : 'none';
+    document.getElementById('view-career').style.display = tab==='career' ? '' : 'none';
+    if(tab==='plan'){
+      document.getElementById('eyebrowText').textContent = '研 0 计划 · 7.13 — 8.28';
+      document.getElementById('mainTitle').textContent = '先文后武';
+      document.getElementById('mainSub').textContent = '术前收尾 → 静养恢复 → 逐步复工 → 冲刺雅思与深度学习';
+    }else{
+      document.getElementById('eyebrowText').textContent = '职业规划 · PHM 算法岗';
+      document.getElementById('mainTitle').textContent = '走少有人走的路';
+      document.getElementById('mainSub').textContent = '研一打基础，暑假冲实习，论文厚积薄发';
+    }
+  });
 });
 
 (async function init(){
