@@ -122,14 +122,17 @@
   }
 
   .task{
-    display:flex; align-items:flex-start; gap:12px;
-    padding:13px 18px 13px 20px;
+    display:flex; flex-direction:column;
     border-bottom:1px solid var(--line);
     font-size:14.5px;
   }
   .task:last-child{border-bottom:none;}
   .task.done .task-text{ color:var(--muted); text-decoration: line-through; text-decoration-color: rgba(143,166,157,0.5);}
 
+  .task-main{
+    display:flex; align-items:flex-start; gap:12px;
+    padding:13px 18px 13px 20px;
+  }
   .check{
     width:19px; height:19px; border-radius:6px;
     border:1.5px solid var(--muted);
@@ -153,6 +156,76 @@
     color:var(--muted);
   }
   .task.done .task-note{ opacity:.55; }
+
+  .journal-btn{
+    flex-shrink:0; display:flex; align-items:center; gap:4px;
+    background:none; border:1px solid var(--line); color:var(--muted);
+    font-size:11px; padding:4px 9px; border-radius:999px;
+    cursor:pointer; margin-top:1px;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .journal-btn svg{width:11px; height:11px;}
+  .journal-btn.has-entries{ color:var(--mint); border-color: rgba(127,231,196,0.4); }
+  .task.journal-open .journal-btn{ color:var(--mint); border-color: rgba(127,231,196,0.4); }
+
+  .journal-panel{
+    max-height:0; overflow:hidden;
+    transition: max-height .25s ease;
+    background: var(--surface-2);
+  }
+  .task.journal-open .journal-panel{ }
+
+  .journal-inner{ padding: 12px 18px 16px 20px; }
+  .journal-entry{
+    padding:9px 11px; margin-bottom:8px;
+    background: rgba(234,243,239,0.04);
+    border-radius:10px;
+    font-size:13px; line-height:1.55;
+    position:relative;
+  }
+  .journal-entry-text{ white-space:pre-wrap; word-break:break-word; padding-right:20px; }
+  .journal-entry-link{
+    display:inline-block; margin-top:6px;
+    color:var(--mint); font-size:12px;
+    text-decoration:none; border-bottom:1px solid rgba(127,231,196,0.4);
+    word-break:break-all;
+  }
+  .journal-entry-time{
+    font-size:10.5px; color:var(--muted); margin-top:6px;
+  }
+  .journal-entry-del{
+    position:absolute; top:8px; right:9px;
+    color:var(--muted); font-size:15px; line-height:1;
+    cursor:pointer; padding:2px;
+  }
+  .journal-entry-del:active{ color:var(--coral); }
+
+  .journal-empty{
+    font-size:12px; color:var(--muted); opacity:.7;
+    margin-bottom:10px;
+  }
+
+  .journal-form textarea{
+    width:100%; resize:vertical; min-height:52px;
+    background: var(--surface); border:1px solid var(--line);
+    border-radius:10px; color:var(--text);
+    font-family:inherit; font-size:13px; padding:9px 11px;
+    margin-bottom:7px;
+  }
+  .journal-form textarea:focus{ outline:none; border-color: rgba(127,231,196,0.5); }
+  .journal-form-row{ display:flex; gap:7px; }
+  .journal-form input[type="url"]{
+    flex:1; background: var(--surface); border:1px solid var(--line);
+    border-radius:10px; color:var(--text);
+    font-family:inherit; font-size:12.5px; padding:8px 11px;
+  }
+  .journal-form input[type="url"]:focus{ outline:none; border-color: rgba(127,231,196,0.5); }
+  .journal-save{
+    background:var(--mint); color:#0F1B1A; border:none;
+    font-size:12.5px; font-weight:500; padding:8px 16px;
+    border-radius:10px; cursor:pointer; flex-shrink:0;
+  }
+  .journal-save:active{ opacity:.75; }
 
   .rest-note{
     padding:12px 18px 16px 20px;
@@ -247,7 +320,9 @@ const PHASES = [
 ];
 
 const STORAGE_KEY = 'yan0-plan-checks';
+const JOURNAL_KEY = 'yan0-plan-journal';
 let state = {};
+let journal = {}; // { taskKey: [ {id, text, link, ts} ] }
 
 function taskKey(pid, idx){ return pid + '-' + idx; }
 
@@ -258,6 +333,12 @@ async function loadState(){
   }catch(e){
     state = {};
   }
+  try{
+    const jres = await window.storage.get(JOURNAL_KEY);
+    journal = jres && jres.value ? JSON.parse(jres.value) : {};
+  }catch(e){
+    journal = {};
+  }
 }
 
 async function saveState(){
@@ -266,6 +347,53 @@ async function saveState(){
   }catch(e){
     console.error('save failed', e);
   }
+}
+
+async function saveJournal(){
+  try{
+    await window.storage.set(JOURNAL_KEY, JSON.stringify(journal));
+  }catch(e){
+    console.error('journal save failed', e);
+  }
+}
+
+function fmtTime(ts){
+  const d = new Date(ts);
+  const mm = d.getMonth()+1, dd = d.getDate();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  return `${mm}.${dd} ${hh}:${mi}`;
+}
+
+function escapeHTML(str){
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderJournalList(key){
+  const listEl = document.querySelector(`.journal-list[data-key="${key}"]`);
+  if(!listEl) return;
+  const entries = (journal[key] || []).slice().sort((a,b)=>b.ts-a.ts);
+  if(entries.length === 0){
+    listEl.innerHTML = `<div class="journal-empty">还没有记录，写下第一条想法吧</div>`;
+    return;
+  }
+  listEl.innerHTML = entries.map(e => `
+    <div class="journal-entry" data-id="${e.id}">
+      <span class="journal-entry-del" data-action="del-entry" data-id="${e.id}">×</span>
+      <div class="journal-entry-text">${escapeHTML(e.text)}</div>
+      ${e.link ? `<a class="journal-entry-link" href="${escapeHTML(e.link)}" target="_blank" rel="noopener">${escapeHTML(e.link)}</a>` : ''}
+      <div class="journal-entry-time">${fmtTime(e.ts)}</div>
+    </div>
+  `).join('');
+}
+
+function updateJournalBtn(key){
+  const taskEl = document.querySelector(`.task[data-key="${key}"]`);
+  if(!taskEl) return;
+  const btn = taskEl.querySelector('.journal-btn');
+  const count = (journal[key] || []).length;
+  btn.classList.toggle('has-entries', count > 0);
+  btn.querySelector('span').textContent = count > 0 ? count : '记录';
 }
 
 function totalCount(){
@@ -311,16 +439,36 @@ function buildPhaseHTML(p){
     const key = taskKey(p.id,i);
     const isDone = !!state[key];
     const noteHTML = task.n ? `<div class="task-note">${task.n}</div>` : '';
+    const entries = journal[key] || [];
+    const hasEntries = entries.length > 0;
     return `
     <div class="task ${isDone?'done':''}" data-key="${key}">
-      <div class="check">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0F1B1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
+      <div class="task-main">
+        <div class="check" data-action="check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0F1B1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="task-body" data-action="journal-toggle">
+          <div class="task-text">${task.t}</div>
+          ${noteHTML}
+        </div>
+        <button class="journal-btn ${hasEntries?'has-entries':''}" data-action="journal-toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          <span>${hasEntries ? entries.length : '记录'}</span>
+        </button>
       </div>
-      <div class="task-body">
-        <div class="task-text">${task.t}</div>
-        ${noteHTML}
+      <div class="journal-panel">
+        <div class="journal-inner">
+          <div class="journal-list" data-key="${key}"></div>
+          <div class="journal-form" data-key="${key}">
+            <textarea placeholder="记录想法、收获，或搜到的信息…" rows="2"></textarea>
+            <div class="journal-form-row">
+              <input type="url" placeholder="相关链接（可选，比如网盘/文章/笔记）">
+              <button class="journal-save">保存</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -364,14 +512,93 @@ function render(){
     });
   });
 
-  // task toggle
-  container.querySelectorAll('.task').forEach(taskEl=>{
-    taskEl.addEventListener('click', async (e)=>{
+  // checkbox toggle
+  container.querySelectorAll('.check').forEach(checkEl=>{
+    checkEl.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const taskEl = checkEl.closest('.task');
       const key = taskEl.getAttribute('data-key');
       state[key] = !state[key];
       taskEl.classList.toggle('done', !!state[key]);
       updateProgressUI();
       await saveState();
+      // re-sync open phase heights since checkbox doesn't change height, but keep safe
+    });
+  });
+
+  // journal panel toggle
+  container.querySelectorAll('[data-action="journal-toggle"]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const taskEl = el.closest('.task');
+      const key = taskEl.getAttribute('data-key');
+      const panel = taskEl.querySelector('.journal-panel');
+      const isOpen = taskEl.classList.contains('journal-open');
+      if(isOpen){
+        taskEl.classList.remove('journal-open');
+        panel.style.maxHeight = null;
+      }else{
+        taskEl.classList.add('journal-open');
+        renderJournalList(key);
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+      // resync the parent phase-tasks height so it doesn't clip
+      const phase = taskEl.closest('.phase');
+      const tasksDiv = phase.querySelector('.phase-tasks');
+      requestAnimationFrame(()=>{
+        tasksDiv.style.maxHeight = tasksDiv.scrollHeight + 'px';
+      });
+    });
+  });
+
+  // journal save
+  container.querySelectorAll('.journal-form').forEach(formEl=>{
+    const key = formEl.getAttribute('data-key');
+    const btn = formEl.querySelector('.journal-save');
+    const textarea = formEl.querySelector('textarea');
+    const linkInput = formEl.querySelector('input[type="url"]');
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const text = textarea.value.trim();
+      const link = linkInput.value.trim();
+      if(!text && !link) return;
+      if(!journal[key]) journal[key] = [];
+      journal[key].push({ id: Date.now()+'-'+Math.random().toString(36).slice(2,7), text, link, ts: Date.now() });
+      await saveJournal();
+      textarea.value = '';
+      linkInput.value = '';
+      renderJournalList(key);
+      updateJournalBtn(key);
+      const taskEl = formEl.closest('.task');
+      const panel = taskEl.querySelector('.journal-panel');
+      panel.style.maxHeight = panel.scrollHeight + 'px';
+      const phase = taskEl.closest('.phase');
+      const tasksDiv = phase.querySelector('.phase-tasks');
+      requestAnimationFrame(()=>{
+        tasksDiv.style.maxHeight = tasksDiv.scrollHeight + 'px';
+      });
+    });
+  });
+
+  // journal delete (event delegation since entries re-render)
+  container.querySelectorAll('.journal-list').forEach(listEl=>{
+    listEl.addEventListener('click', async (e)=>{
+      const delBtn = e.target.closest('[data-action="del-entry"]');
+      if(!delBtn) return;
+      const key = listEl.getAttribute('data-key');
+      const id = delBtn.getAttribute('data-id');
+      journal[key] = (journal[key] || []).filter(en => en.id !== id);
+      await saveJournal();
+      renderJournalList(key);
+      updateJournalBtn(key);
+      const taskEl = listEl.closest('.task');
+      const panel = taskEl.querySelector('.journal-panel');
+      panel.style.maxHeight = panel.scrollHeight + 'px';
+      const phase = taskEl.closest('.phase');
+      const tasksDiv = phase.querySelector('.phase-tasks');
+      requestAnimationFrame(()=>{
+        tasksDiv.style.maxHeight = tasksDiv.scrollHeight + 'px';
+      });
     });
   });
 
@@ -387,9 +614,11 @@ function render(){
 }
 
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
-  if(!confirm('确定要清空所有打卡记录吗？')) return;
+  if(!confirm('确定要清空所有打卡记录和想法笔记吗？此操作不可恢复')) return;
   state = {};
+  journal = {};
   await saveState();
+  await saveJournal();
   render();
 });
 
